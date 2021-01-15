@@ -10,7 +10,7 @@ def respond():
     #print(request.json);
     ticket_detail = request.json
     
-    if(type(ticket_detail)!=None):
+    if(str(type(ticket_detail))!="<class 'NoneType'>"):
         if(ticket_detail[0]['payload']['firstThread']['author']['name'].lower()=='qualyval test'):
             with open('log.csv', mode='a+', newline='') as log:
                 log_writer = csv.writer(log, delimiter=',')
