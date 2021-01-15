@@ -9,7 +9,6 @@ cffi==1.14.3
 chardet==3.0.4
 click==7.1.2
 colorama==0.4.4
-mails
 confluence-rest-library==1.2.2
 constantly==15.1.0
 cryptography==3.2.1

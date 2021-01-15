@@ -4,7 +4,7 @@ from shutil import copyfile,rmtree
 import calendar,time,re
 
 #import submodules
-from mails import ReadMails
+#from mails import ReadMails
 from invoiceRequest import InvoiceRequest
 from ReadPDF import getPDF
 from PO_Details import get_PO
