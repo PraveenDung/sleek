@@ -30,8 +30,9 @@ def get_PO(purchase_order_path):
 def get_pdf_details(input_text,client_name,job_name):
     global PO_Data
     PO_Data = []
-    purchase_order_no = re.findall(r"(?<=Purchase Order Number :).*.(?=Pattison)",input_text,flags = re.S)[0].replace('\n','');
-    pattsion_quote = re.findall(r"(?<=Pattison Quote #:).*.(?=Production Representative :)",input_text,flags = re.S)[0].split('\n')[2]
+    purchase_order_value = re.findall(r"(?<=Purchase Order Number :).*.(?=Pattison)",input_text,flags = re.S)[0].replace('\n','');
+    purchase_order_no = re.findall(r"PO-\d{1,}",purchase_order_value,flags = re.S)[0].replace('\n','');
+    pattsion_quote = re.findall(r"(?<=Pattison Quote #:).*.(?=Special Instructions:)",input_text,flags = re.S)[0].split('\n')[2]
     
     work_client_name_design = re.findall(r"(?<=Sales Contract :).*.(?=Quantity)",input_text,flags = re.S)[0].split('\n\n')
     
@@ -112,6 +113,17 @@ def get_pdf_details(input_text,client_name,job_name):
                     if(str(work_client_name_design[i]).strip()[0]=='D'):
                         design = design + '\n' + work_client_name_design[i]
 
+    if(client_name in work_client_name_design):
+        pass
+    else:
+        design = ''
+        for item in work_client_name_design:
+            try:
+                if(re.match(r"D\d{1,}",item.split('-')[0].strip())):
+                    design = design + '\n' + item
+            except:
+                pass
+            
     quantity_required_by = input_text.split('Quantity\n')
     quantity_required_by = list(filter(None, quantity_required_by))
     split_quantity_required_by = quantity_required_by[1].split('\n')
@@ -138,9 +150,16 @@ def get_pdf_details(input_text,client_name,job_name):
         if((re.search('\*\*\*all',item.lower())) or (re.search('\*all',item.lower()))):
             description = item
 
+    if(description == ''):    
+        for item in input_text.split('\n\n'):
+            if(re.search('full colour',item.lower())):
+                description = item
+
     shipping_instrucions = re.findall(r"(?<=Shipping Instructions:).*.(?=Final Art :)",input_text,flags = re.S)[0].strip()
     final_art = re.findall(r"(?<=Final Art :).*.(?=AUTHORIZATION)",input_text,flags = re.S)[0].strip().split('\n')
     final_art = list(filter(None, final_art))
+    if(len(final_art)==0):
+        final_art.append(' ')
     PO_Data = [purchase_order_no,pattsion_quote,work_order_no,client_name,job_name,design,';'.join(quantity),';'.join(require_by),';'.join(quoted_price),description,shipping_instrucions,final_art[0]]
     
     return PO_Data
@@ -184,16 +203,14 @@ def get_Client_Job_Name(file_name):
         for obj in lt_objs:
             # if it's a textbox, print text and location
             if isinstance(obj, pdfminer.layout.LTTextBoxHorizontal):
-                #print(math.floor(obj.bbox[0]))
-                if((math.floor(obj.bbox[0])==139) & (math.floor(obj.bbox[1])==588)):
+                if(((math.floor(obj.bbox[0])==139) or (math.floor(obj.bbox[0])==98)) & ((math.floor(obj.bbox[1])==588) or (math.floor(obj.bbox[1])==638))):
                     client.append(obj.get_text().replace('\n', ''))
-                if((math.floor(obj.bbox[0])==139) & (math.floor(obj.bbox[1])==573)):
+                if(((math.floor(obj.bbox[0])==139) or (math.floor(obj.bbox[0])==98)) & ((math.floor(obj.bbox[1])==573) or (math.floor(obj.bbox[1])==574) or (math.floor(obj.bbox[1])==623))):
                     job_name.append(obj.get_text().replace('\n', ''))
             # if it's a container, recurse
             elif isinstance(obj, pdfminer.layout.LTFigure):
                 parse_obj(obj._objs)
-
-
+                
     # loop over all pages in the document
     for page in PDFPage.create_pages(document):
 

@@ -7,7 +7,6 @@ app = Flask(__name__)
 
 @app.route('/webhook', methods=['GET','POST'])
 def respond():
-    #print(request.json);
     ticket_detail = request.json
     
     if(str(type(ticket_detail))!="<class 'NoneType'>"):
